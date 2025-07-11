@@ -2,13 +2,14 @@
 This repository provides an end-to-end framework for silent speech decoding using surface electromyography (sEMG) signals. Building on the Gaddy et al. dataset, our system maps sEMG inputs to acoustic features, which are then used to synthesize speech and evaluate intelligibility through automatic speech recognition (ASR).
 
 Key features include:
-	- Preprocessing of the Gaddy dataset with re-indexing and alignment
-	- Flexible training pipelines supporting various EMG channel combinations
-	- Support for channel dropout and fine-tuning from pretrained models
-	- Inference scripts for speech synthesis and WER computation using Whisper ASR
-	- Phoneme-level error analysis for detailed evaluation
+- Preprocessing of the Gaddy dataset with re-indexing and alignment
+- Flexible training pipelines supporting various EMG channel combinations
+- Support for channel dropout and fine-tuning from pretrained models
+- Inference scripts for speech synthesis and WER computation using Whisper ASR
+- Phoneme-level error analysis for detailed evaluation
  
 ## ⚙️ Setup
+TBA
 
 ## **🚀 Usage**
 
