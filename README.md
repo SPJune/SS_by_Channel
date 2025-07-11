@@ -9,7 +9,9 @@ Key features include:
 - Phoneme-level error analysis for detailed evaluation
  
 ## ⚙️ Setup
-TBA
+```
+pip install -r requirements.txt
+```
 
 ## **🚀 Usage**
 
