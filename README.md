@@ -17,7 +17,7 @@ TBA
 
 1. Download the Gaddy dataset from [Zenodo](https://doi.org/10.5281/zenodo.4064408) and extract it.
     
-2. Prepare text alignments from the original [repository](https://github.com/dgaddy/silent_speech):
+2. Prepare text alignments from the original [repository](https://github.com/dgaddy/silent_speech):
     
 ```
 git submodule init
