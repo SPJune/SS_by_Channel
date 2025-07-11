@@ -1,0 +1,7 @@
+seed: 42
+data_path: /data2/spjune/silent_speech
+exp_path: /data1/marg/spjune/silent_speech
+exp_name: 250710mspec0245_test
+ckpt_epoch: last
+split: dev
+permute_channel: []

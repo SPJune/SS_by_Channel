@@ -1,0 +1,21 @@
+km_name: km100_fairseq
+num_clusters: 100
+wav_dir: toplines/gt
+data_split: dev
+data_type: voiced_parallel_data
+encoder: 241120hubert_soft0505
+decoder: fairseq
+decoder_iter: null
+repcodec_name: 241207repcodec_ft
+repcodec_epoch: 5
+max_step: 12000
+eos: 101
+sos: null
+merge: True
+use_silero: False
+use_gt_ph: False
+encoder_epoch: 107
+
+defaults:
+  - common.yaml
+  - feature: hubert_soft

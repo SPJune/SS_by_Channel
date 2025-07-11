@@ -1,0 +1,11 @@
+wav_dir: toplines/gt
+data_split: dev
+data_type: silent_parallel_data
+encoder: 241120hubert_soft0505
+use_silero: False
+use_gt_ph: False
+encoder_epoch: 107
+
+defaults:
+  - common.yaml
+  - feature: mspec22

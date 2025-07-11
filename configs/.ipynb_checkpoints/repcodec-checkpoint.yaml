@@ -1,0 +1,19 @@
+exp_name: temp
+emg_enc: 241120hubert_soft0505
+batch_size: 256
+num_workers: 16
+debug: False
+data_path: /data2/spjune/silent_speech/preprocessed
+exp_path: /data2/spjune/exp_repcodec
+max_sec: 12
+model_path: /data2/jwlee/jw_results/RepCodec/emg_VCTK/tag/checkpoint/checkpoint-200000steps.pkl
+model_cfg_path: /data2/jwlee/jw_results/RepCodec/emg_VCTK/tag/config/config.yml
+data_splits:
+  - silent_parallel_data
+  - voiced_parallel_data
+  - nonparallel_data
+defaults:
+  - common.yaml
+  - trainer: trainer_repcodec
+  - optimizer: adam
+  - feature: hubert_soft

@@ -1,0 +1,3 @@
+seed: 42
+data_path: /data2/spjune/silent_speech
+exp_path: /data1/marg/spjune/silent_speech

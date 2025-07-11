@@ -1,0 +1,3 @@
+- exp_name=250710mspec0245_test
+- ckpt_epoch=last
+- split=dev
