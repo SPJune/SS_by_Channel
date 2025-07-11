@@ -7,24 +7,26 @@ import shutil
 
 import sys
 
+TAPATH = '/data2/spjune/silent_speech/text_alignments'
+BASEPATH = '/data2/spjune/silent_speech/emg_data'
+
 class Matcher():
     def __init__(self, dev=False, test=False, testset_file='testset_largedev.json'):
         with open(testset_file) as f:
             testset_json = json.load(f)
             devset = testset_json['dev']
             testset = testset_json['test']
-        base_dir = '/data2/spjune/silent_speech/emg_data'
         directories = []
         self.example_indices = []
         voiced_data_locations = {} # map from book/sentence_index to directory_info/index
 
         sd = 'silent_parallel_data'
-        sd = os.path.join(base_dir, sd) 
+        sd = os.path.join(BASEPATH, sd) 
         for session_dir in sorted(os.listdir(sd)):
             directories.append(EMGDirectory(len(directories), os.path.join(sd, session_dir), True))
         for vd in ['nonparallel_data', 'voiced_parallel_data']:
         #for vd in ['closed_vocab/voiced', 'nonparallel_data', 'voiced_parallel_data', 'closed_vocab/silent', 'silent_parallel_data']:
-            vd = os.path.join(base_dir, vd)
+            vd = os.path.join(BASEPATH, vd)
             for session_dir in sorted(os.listdir(vd)):
                 directories.append(EMGDirectory(len(directories), os.path.join(vd, session_dir), False))
 
@@ -39,7 +41,7 @@ class Matcher():
                         if info['sentence_index'] >= 0 and info['text'] != '.': # boundary clips of silence are marked -1
                             if 'silent_parallel' not in json_path:
                                 kind, sess, idx = split_path(json_path)
-                                tg_path = f'/data2/spjune/silent_speech/text_alignments/{sess}/{sess}_{idx}_audio.TextGrid'
+                                tg_path = f'{TAPATH}/{sess}/{sess}_{idx}_audio.TextGrid'
                                 if not os.path.exists(tg_path):
                                     print(tg_path, info['text'])
                                     continue
@@ -54,7 +56,7 @@ class Matcher():
                                 voiced_data_locations[location] = (directory_info,int(idx_str))
         self.example_indices.sort()
         self.voiced_data_locations = voiced_data_locations
-        self.base_dir = base_dir
+        self.base_dir = BASEPATH
 
     def get_len(self):
         return len(self.example_indices)
@@ -103,7 +105,7 @@ def move_file(old_path, old_idx, new_path, new_idx):
         shutil.copyfile(old_file, new_file)
 
 def move_text_grid(sess, old_idx, new_path, new_idx):
-    old_file = f'/data2/spjune/silent_speech/text_alignments/{sess}/{sess}_{old_idx}_audio.TextGrid'
+    old_file = f'{TAPATH}/{sess}/{sess}_{old_idx}_audio.TextGrid'
     new_file = os.path.join(new_path, f'{new_idx}_tg.TextGrid')
     shutil.copyfile(old_file, new_file)
 
