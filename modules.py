@@ -121,7 +121,7 @@ class EMGEncoder(pl.LightningModule):
         self.fig_dir = fig_dir
         self.feat_norm = feat_norm
 
-    def forward(self, x_raw, f0=None, uv=None):
+    def forward(self, x_raw):
         # x shape is (batch, time, electrode)
         x_raw = x_raw[:,:,self.emg_ch]
         x_raw = self.channel_dropout(x_raw)
@@ -138,18 +138,6 @@ class EMGEncoder(pl.LightningModule):
         feat = self.w_out(x)
         ph = self.w_aux(x)
         return feat, ph
-
-    def adjust_length(self, feat, f0):
-        batch_size = feat.shape[0]
-        target_length = feat.shape[1]
-        current_length = f0.shape[2]
-        if current_length > target_length:
-            return f0[:, :, :target_length]
-    
-        else:
-            padding_length = target_length - current_length
-            padding = f0[:, :, -1:].repeat(1, 1, padding_length)
-            return torch.cat([f0, padding], dim=2)
 
     def configure_optimizers(self):
         optimizer_class = hydra.utils.get_class(self.optimizer_config.target)
@@ -180,14 +168,12 @@ class EMGEncoder(pl.LightningModule):
         silents = batch['silents']
         target_lengths = batch['target_lengths']
         est_lengths = batch['est_lengths']
-        f0 = batch['f0']
-        uv = batch['uv']
         r = random.randrange(8)
         if r > 0:
             temp = x[:,r:,:] # shift left r
             x[:,:-r,:] = temp.clone()
             x[:,-r:,:] = 0
-        y_hat, y_ph_hat = self(x, f0, uv)
+        y_hat, y_ph_hat = self(x)
         loss, loss_dist, loss_ph, _  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths)
         self.log('train_loss', loss, batch_size=self.batch_size)
         self.log('train_loss_dist', loss_dist, batch_size=self.batch_size)
@@ -208,9 +194,7 @@ class EMGEncoder(pl.LightningModule):
         target_lengths = batch['target_lengths']
         est_lengths = batch['est_lengths']
         mel = batch['mel']
-        f0 = batch['f0']
-        uv = batch['uv']
-        y_hat, y_ph_hat = self(x, f0, uv)
+        y_hat, y_ph_hat = self(x)
         loss, loss_dist, loss_ph, phone_acc  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths, phoneme_eval=True)
         self.log('val_loss', loss, batch_size=1)
         self.log('val_loss_dist', loss_dist, batch_size=1)
@@ -229,9 +213,7 @@ class EMGEncoder(pl.LightningModule):
         target_lengths = batch['target_lengths']
         est_lengths = batch['est_lengths']
         mel = batch['mel']
-        f0 = batch['f0']
-        uv = batch['uv']
-        y_hat, y_ph_hat = self(x, f0, uv)
+        y_hat, y_ph_hat = self(x)
         loss, loss_dist, loss_ph, phone_acc  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths, phoneme_eval=True)
         self.log('test_loss', loss, batch_size=1)
         return loss
