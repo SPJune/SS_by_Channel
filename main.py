@@ -14,7 +14,7 @@ import pickle
 from loader import EMGDataset
 from modules import EMGEncoder
 from data_utils import phoneme_inventory
-from utils import load_partial_pretrained_model
+from utils import load_partial_pretrained_model, set_global_seed
 
 class SpecificEpochsCheckpoint(ModelCheckpoint):
     def __init__(self, save_epochs=[5, 10], *args, **kwargs):
@@ -27,6 +27,7 @@ class SpecificEpochsCheckpoint(ModelCheckpoint):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def main(cfg:DictConfig):
+    set_global_seed(cfg.seed)
     log = logging.getLogger(__name__)
     log.info("Info level message")
     log.debug("Debug level message")

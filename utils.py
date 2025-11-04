@@ -8,6 +8,30 @@ import os
 import sys
 from textgrids import TextGrid
 import torch
+import random
+
+def set_global_seed(seed: int = 42, hard: bool = False):
+    os.environ["PYTHONHASHSEED"] = str(seed)
+
+    # Python built-in
+    random.seed(seed)
+
+    # NumPy
+    np.random.seed(seed)
+
+    # Torch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if using multi-GPU
+
+    if hard:
+        os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        torch.use_deterministic_algorithms(True)
+    else:
+        torch.backends.cudnn.benchmark = True  # 속도 최적화
+        torch.backends.cudnn.deterministic = False
 
 def load_partial_pretrained_model(model, ckpt_path, selected_channels):
     ckpt = torch.load(ckpt_path, map_location="cpu")

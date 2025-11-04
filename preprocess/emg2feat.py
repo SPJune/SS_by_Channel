@@ -26,8 +26,8 @@ def permute_emg_channels(x, channel_indices):
     
     return x_perm
     
-def get_best_ckpt(exp_name):
-    pattern = f"/data1/marg/spjune/silent_speech/{exp_name}/epoch=*val_loss=*.ckpt"
+def get_best_ckpt(exp_name, exp_path):
+    pattern = f"{exp_path}/{exp_name}/epoch=*val_loss=*.ckpt"
     ckpt_files = glob(pattern)
     
     best_loss = float('inf')
@@ -83,7 +83,7 @@ def main(cfg:DictConfig):
     if cfg.ckpt_epoch == None or cfg.ckpt_epoch == 'last':
         checkpoint_path = os.path.join(cfg.exp_path, cfg.exp_name, 'last.ckpt')
     elif cfg.ckpt_epoch == 'best':
-        checkpoint_path = get_best_ckpt(cfg.exp_name)
+        checkpoint_path = get_best_ckpt(cfg.exp_name, cfg.exp_path)
 
     else:
         checkpoint_path = glob(os.path.join(cfg.exp_path, cfg.exp_name, f'epoch={cfg.ckpt_epoch:02d}*'))[0]
