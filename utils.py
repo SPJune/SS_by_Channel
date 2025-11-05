@@ -1,4 +1,3 @@
-from colorama import Fore, Style, init
 import difflib
 import hydra
 import matplotlib.pyplot as plt
@@ -133,34 +132,6 @@ def edit_distance_sequences(x, y):
         j -= 1
 
     return edit_x, edit_y
-
-def print_colored_diff(x, y, title=''):
-    print('-'*10, title, '-'*10)
-    edit_x, edit_y = edit_distance_sequences(x, y)
-    x_colored = ""
-    y_colored = ""
-
-    print("x1")
-    for i, token in enumerate(x):
-        if edit_x[i] == 0:
-            print(Fore.WHITE + str(token), end=' ')
-        elif edit_x[i] == 1:
-            print(Fore.YELLOW + str(token), end=' ')
-        elif edit_x[i] == 2:
-            print(Fore.RED + str(token), end=' ')
-
-    print()
-    print(Fore.WHITE + "x2")
-    for j, token in enumerate(y):
-        if edit_y[j] == 0:
-            print(Fore.WHITE+ str(token), end=' ')
-        elif edit_y[j] == 1:
-            print(Fore.YELLOW + str(token), end=' ')
-        elif edit_y[j] == 3:
-            print(Fore.GREEN + str(token), end=' ')
-
-    print()
-    print(Fore.WHITE + '---')
 
 def init_cfg(config_name: str):
     with hydra.initialize(config_path="configs"):
