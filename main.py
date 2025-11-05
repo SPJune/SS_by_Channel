@@ -45,7 +45,7 @@ def main(cfg:DictConfig):
     else:
         #ckpt_callback = ModelCheckpoint(dirpath=exp_dir, filename='{epoch:02d}-{val_loss:.3f}', verbose=True, mode='min', save_top_k=5, monitor='val_loss', save_last=True)
         ckpt_callback = SpecificEpochsCheckpoint(save_epochs=[100, 200, 300, 400, 500], dirpath=exp_dir, filename='{epoch:02d}-{val_loss:.3f}', verbose=True, mode='min', save_top_k=3, monitor='val_loss', save_last=True)
-        wandb_logger = WandbLogger(project='2025SilentSpeechChannel', entity='dlswns8', name=cfg.exp_name, save_dir=cfg.exp_path)
+        wandb_logger = WandbLogger(project='2025SS_ChannelGating', entity='dlswns8', name=cfg.exp_name, save_dir=cfg.exp_path)
         os.makedirs(exp_dir, exist_ok=True)
         config_path = os.path.join(exp_dir, "merged_config.yaml")
         with open(config_path, "w") as f:

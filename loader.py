@@ -51,6 +51,7 @@ class EMGDataset(torch.utils.data.Dataset):
             self.normalizer = FeatureNormalizer(npz_data['mean'], npz_data['std'])
             self.feat_norm, self.emg_norm = pickle.load(open(os.path.join(base_dir, 'normalizer.pkl'),'rb'))
         self.data_split = data_split
+        mel_dir = base_dir
         self.preprocessed_path = os.path.join(base_dir, data_split)
         base_dir = base_dir[:base_dir.find('preprocessed')].rstrip('/')
         self.base_path = os.path.join(base_dir, 'silent_speech_dataset', data_split)
@@ -69,7 +70,7 @@ class EMGDataset(torch.utils.data.Dataset):
             self.target_speech_len = int(self.frame_rate*self.target_sec)
             self.target_emg_len = self.target_speech_len * self.conv_ds
 
-        mel_dir = os.path.join(self.preprocessed_path.split(target)[0], 'mspec/sr16000')
+        #mel_dir = os.path.join(self.preprocessed_path.split(target)[0], 'mspec/sr16000')
         self.mel_norm, _ = pickle.load(open(os.path.join(mel_dir, 'normalizer.pkl'),'rb'))
         self.mel_dir = os.path.join(mel_dir, data_split)
         self.target = target
