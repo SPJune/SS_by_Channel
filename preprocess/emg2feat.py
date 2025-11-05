@@ -103,9 +103,8 @@ def main(cfg:DictConfig):
         emg = torch.tensor(emg).unsqueeze(0).to(device)
         if len(cfg.permute_channel) > 0:
             emg = permute_emg_channels(emg, cfg.permute_channel)
-        f0_tensor, uv_tensor = None, None
         with torch.no_grad():
-            feat, ph, = emg_enc(emg, f0_tensor, uv_tensor)
+            feat, ph, = emg_enc(emg)
         path_save = os.path.join(cfg.data_path, 'preprocessed/est_feature', feature.target, sub_option, cfg.exp_name, data_split, data_type, sess, f'{idx}_feat.npy')
         path_ph = os.path.join(cfg.data_path, 'preprocessed/est_feature', feature.target, sub_option, cfg.exp_name, data_split, data_type, sess, f'{idx}_ph.npy')
         feat = feat[0].cpu().numpy()
