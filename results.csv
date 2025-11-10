@@ -1,0 +1,12 @@
+exp_name,ckpt_epoch,split,cer,cer_wo_space,wer
+251109split_silent_voiced,last,dev,49.86,52.79,73.70
+251109expand_channel,last,dev,52.99,55.45,79.55
+251109expand_from_org,last,dev,19.90,21.69,35.98
+251109gating36ch,last,dev,20.57,22.63,36.61
+251109gating8ch,last,dev,20.49,22.39,36.96
+251109gating36ch,92,dev,20.16,22.08,35.79
+251110gating36ch,last,dev,21.18,23.07,36.69
+251110gating8ch,last,dev,20.52,22.34,36.48
+251110gating36ch_add_length,14,dev,39.01,43.10,57.70
+251110gating36ch_add_length,last,dev,20.33,22.43,35.11
+251110gating36ch_add_length,98,dev,18.84,20.62,34.26

@@ -12,12 +12,33 @@ import torch.nn.functional as F
 from torch.optim.lr_scheduler import LambdaLR, ReduceLROnPlateau
 from typing import Optional
 import sys
+import itertools
 
 from loss import dtw_loss
+from gater import ChannelGatingNet
 
 from hifi_gan.env import AttrDict
 from hifi_gan.models import Generator
 
+def expand_with_differences(x: torch.Tensor) -> torch.Tensor:
+    """
+    Args:
+        x: torch.Tensor of shape (B, T, C)
+    Returns:
+        torch.Tensor of shape (B, T, C + C*(C-1)//2)
+    """
+    B, T, C = x.shape
+    channels = [x]  # 원본 채널 유지
+    
+    # C개 중 2개를 뽑는 모든 조합에 대해 차이 계산
+    for i, j in itertools.combinations(range(C), 2):
+        diff = x[:, :, i] - x[:, :, j]  # (B, T)
+        diff = diff.unsqueeze(-1)       # (B, T, 1)
+        channels.append(diff)
+    
+    # 마지막 축(C 축)으로 concat
+    x_expanded = torch.cat(channels, dim=-1)
+    return x_expanded
 
 def topk_masking(mask, k):
     topk_vals, topk_indices = torch.topk(mask, k)
@@ -97,6 +118,22 @@ class EMGEncoder(pl.LightningModule):
         emg_num_ch = len(emg_enc_config.use_channel)
         self.emg_ch = emg_enc_config.use_channel
         self.channel_dropout = ChannelDropout(emg_enc_config.get('channel_dropout', 0))
+        self.expand_channel = getattr(emg_enc_config, "expand_channel", False)
+        if self.expand_channel:
+            emg_num_ch = emg_num_ch*(emg_num_ch + 1)//2
+
+        self.gating = getattr(emg_enc_config, "channel_gating", False)
+        if self.gating:
+            self.gating_net = ChannelGatingNet(
+                channels=emg_num_ch,
+                hidden_channels=128,
+                conv_kernel=7,
+                pool="attn",       # "mean"이나 "max"로 바꿔도 OK
+                se_ratio=4,
+                temperature=1.0,
+                dropout=0.1
+            )
+
 
         self.conv_blocks = nn.Sequential(
             ResBlock(emg_num_ch, model_size, 2),
@@ -121,10 +158,15 @@ class EMGEncoder(pl.LightningModule):
         self.fig_dir = fig_dir
         self.feat_norm = feat_norm
 
-    def forward(self, x_raw):
+    def forward(self, x_raw, lengths=None):
         # x shape is (batch, time, electrode)
         x_raw = x_raw[:,:,self.emg_ch]
         x_raw = self.channel_dropout(x_raw)
+        if self.expand_channel:
+            x_raw = expand_with_differences(x_raw)
+        if self.gating:
+            gates = self.gating_net(x_raw, lengths)
+            x_raw = x_raw*gates.unsqueeze(1)
         x_raw = x_raw.transpose(1,2) # put channel before time for conv
         x_raw = self.conv_blocks(x_raw)
         x_raw = x_raw.transpose(1,2)
@@ -148,6 +190,8 @@ class EMGEncoder(pl.LightningModule):
                             + list(self.w_out.parameters())
                             + list(self.w_aux.parameters())
                             )
+        if self.gating:
+            trainable_params += list(self.gating_net.parameters())
         optimizer = optimizer_class(self.parameters(), **self.optimizer_config.params)
         def lr_lambda(current_step: int):
             if current_step < self.learning_rate_warmup:
@@ -173,7 +217,7 @@ class EMGEncoder(pl.LightningModule):
             temp = x[:,r:,:] # shift left r
             x[:,:-r,:] = temp.clone()
             x[:,-r:,:] = 0
-        y_hat, y_ph_hat = self(x)
+        y_hat, y_ph_hat = self(x, est_lengths)
         loss, loss_dist, loss_ph, _  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths)
         self.log('train_loss', loss, batch_size=self.batch_size)
         self.log('train_loss_dist', loss_dist, batch_size=self.batch_size)
@@ -194,7 +238,7 @@ class EMGEncoder(pl.LightningModule):
         target_lengths = batch['target_lengths']
         est_lengths = batch['est_lengths']
         mel = batch['mel']
-        y_hat, y_ph_hat = self(x)
+        y_hat, y_ph_hat = self(x, est_lengths)
         loss, loss_dist, loss_ph, phone_acc  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths, phoneme_eval=True)
         self.log('val_loss', loss, batch_size=1)
         self.log('val_loss_dist', loss_dist, batch_size=1)
@@ -213,7 +257,7 @@ class EMGEncoder(pl.LightningModule):
         target_lengths = batch['target_lengths']
         est_lengths = batch['est_lengths']
         mel = batch['mel']
-        y_hat, y_ph_hat = self(x)
+        y_hat, y_ph_hat = self(x, est_lengths)
         loss, loss_dist, loss_ph, phone_acc  = self.loss_fn(y_hat, y_ph_hat, y, y_ph, silents, self.phoneme_loss_weight, target_lengths, est_lengths, phoneme_eval=True)
         self.log('test_loss', loss, batch_size=1)
         return loss

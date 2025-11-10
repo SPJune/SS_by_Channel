@@ -19,7 +19,8 @@ from modules import Vocoder
 def main(cfg:DictConfig):
     device = 'cuda'
     sr22 = 22050
-    vocoder = Vocoder(device=device, half=False)
+    ckpt_file = os.path.join(cfg.data_path, 'pretrained_models/hifigan_finetuned/checkpoint')
+    vocoder = Vocoder(ckpt_file, device=device, half=False)
     output_dir = os.path.join(cfg.exp_path, cfg.encoder, 'direct', cfg.data_split, cfg.data_type)
     os.makedirs(output_dir, exist_ok=True)
     normalizer_file = os.path.join(cfg.data_path, f'preprocessed/target_feature/mspec/sr22050/normalizer.pkl')
